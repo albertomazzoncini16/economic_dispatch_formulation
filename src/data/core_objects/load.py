@@ -1,7 +1,7 @@
-class Load:
-    def __init__(self,
-                 load_name: str,
-                 max_load: float,
-                 ):
-        self.load_name = load_name
-        self.max_load = max_load
+from src.data.core_objects import GenericCoreObject
+
+class Load(GenericCoreObject):
+    def __init__(self, object_name: str, load):
+        super().__init__()  # Call CoreObject's __init__
+        self.object_name = object_name  # Use the setter for validation
+        self.load = load

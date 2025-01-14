@@ -1,28 +1,21 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Dict, Any
+from src.data.core_objects import GenericCoreObject
 
-class Collection(ABC):
-    """
-    Abstract base class for managing a collection of objects.
+class ObjectCollection(ABC):
+    def __init__(self):
+        self._items: Dict[str, GenericCoreObject] = {}
 
-    This class defines the common interface for all collections,
-    including methods to add objects, find objects by name,
-    and list all objects in the collection. Each specific collection
-    (such as NodeCollection, GeneratorCollection, etc.) should inherit
-    from this class and provide concrete implementations for the
-    `add` and `find_by_name` methods.
-    """
-    def __init__(self, collection_name: str):
-        self.items: List = []
+    def add_property(self, object_name: str, property_name: str, property_value: Any):
+        if object_name not in self._items:
+            raise ValueError(f"Object {object_name} not found in the collection.")
+        setattr(self._items[object_name], property_name, property_value)
 
-    @abstractmethod
-    def add(self, item) -> None:
-        pass
+    def add_membership(self, object_name: str, related_object_name: str):
+        if object_name not in self._items or related_object_name not in self._items:
+            raise ValueError("One or both objects not found in the collection.")
+        obj = self._items[object_name]
+        related_obj = self._items[related_object_name]
+        obj.related_objects = getattr(obj, "related_objects", [])
+        obj.related_objects.append(related_obj)
 
-    @abstractmethod
-    def find_by_name(self, name: str):
-        pass
-
-    def list(self):
-        for item in self.items:
-            item.display_info()

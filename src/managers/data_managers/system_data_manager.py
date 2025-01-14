@@ -1,3 +1,0 @@
-
-class SystemDataManager:
-    pass
