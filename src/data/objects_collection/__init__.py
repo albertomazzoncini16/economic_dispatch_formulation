@@ -1,1 +1,0 @@
-from src.data.objects_collection.collection_abstract_class import Collection

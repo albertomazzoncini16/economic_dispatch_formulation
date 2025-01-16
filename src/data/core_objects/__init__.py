@@ -1,1 +1,0 @@
-from src.data.core_objects.generic_core_object import GenericCoreObject
