@@ -1,87 +1,105 @@
 import pickle
+from src.objects.abstract_object_class import AbstractObject
+from relationship_validator import RelationshipValidator
+from typing import Optional
+
 
 class DataManager:
-    def __init__(self):
-        # Dictionary to store collections, keyed by object class name
-        self.data_collections = {}
+    """
+    Manages objects in a structured dictionary format.
+    Stores objects in collections categorized by their class name.
+    """
+    def __init__(self, filename="data.pkl"):
+        self.filename = filename
+        self.objects_database = {}  # Structure: {"ClassName": {"ObjectName": ObjectInstance}}
 
-    def _get_or_create_collection(self, object_class):
-        """
-        Get or create a collection for the specified object class.
-        """
-        class_name = object_class.__name__
-        if class_name not in self.data_collections:
-            self.data_collections[class_name] = {}
-        return self.data_collections[class_name]
 
-    def add_object(self, object_class, object_name):
-        """
-        Add a new object to the collection. Ensures unique object names within the collection.
-        """
-        collection = self._get_or_create_collection(object_class)
-        if object_name in collection:
-            raise ValueError(f"Object with name '{object_name}' already exists in collection '{object_class.__name__}'.")
-        collection[object_name] = object_class(object_name)
+    def get_object_instance(self, object_class: type[AbstractObject], object_name: str) -> Optional[AbstractObject]:
+        """Retrieve an object instance by class type and object name."""
+        if not issubclass(object_class, AbstractObject):
+            raise ValueError(f"{object_class.__name__} must be a subclass of AbstractObject.")
 
-    def get_object(self, object_class, object_name):
-        """
-        Retrieve an object by its name from the collection.
-        """
-        collection = self._get_or_create_collection(object_class)
-        return collection.get(object_name, None)
+        object_class_name = object_class.__name__  # Extract class name dynamically
+        return self.objects_database.get(object_class_name, {}).get(object_name, None)
 
-    def add_property(self, object_class, object_name, property_name, property_value):
+    def get_class_object_names(self, object_class: type[AbstractObject]):
+        """Return a list of all object names stored under a given class."""
+        if not issubclass(object_class, AbstractObject):
+            raise ValueError(f"{object_class.__class__.__name__} must be a subclass of AbstractObject.")
+
+        object_class_name = object_class.__name__  # Get class name properly
+        return list(self.objects_database.get(object_class_name, {}).keys())  # Returns a list of object names (str)
+
+    def add_object(self, object_class: AbstractObject, object_name: str):
+        """Add a new object to the database under its class name."""
+        object_class_name = object_class.__class__.__name__
+
+        # Ensure the class category exists
+        if object_class_name not in self.objects_database:
+            self.objects_database[object_class_name] = {}
+
+        # Prevent duplicates
+        if object_name in self.objects_database[object_class_name]:
+            raise ValueError(f"Object '{object_name}' already exists in '{object_class_name}'.")
+
+        # Store the object
+        self.objects_database[object_class_name][object_name] = object_class
+
+    def add_membership(self,
+                       child_object_class: type[AbstractObject],
+                       child_object_name: str,
+                       parent_object_class: type[AbstractObject],
+                       parent_object_name: str
+                       ):
+        """Validate and set a parent-child relationship."""
+        child = self.get_object_instance(child_object_class, child_object_name)
+        parent = self.get_object_instance(parent_object_class, parent_object_name)
+
+        if not child or not parent:
+            raise ValueError("Both parent and child must exist before setting a relationship.")
+
+        # Validate relationship before setting
+        if not RelationshipValidator.is_valid_child(parent_object_class, child_object_class):
+            raise ValueError(f"{child_object_class} cannot be a child of {parent_object_class}.")
+
+        if not RelationshipValidator.is_valid_parent(child_object_class, parent_object_class):
+            raise ValueError(f"{parent_object_class} cannot be a parent of {child_object_class}.")
+
+        # Set relationships using object methods
+        parent.add_child(child.object_name)
+
+    def add_property(self, object_class: type[AbstractObject], object_name: str, property_name: str, property_value):
+        """Retrieve an object instance and add a property if it exists as an attribute in the AbstractObject subclass.
+
+        Args:
+            object_class (type[AbstractObject]): The class type of the object.
+            object_name (str): The name of the object.
+            property_name (str): The attribute name to update.
+            property_value: The value to set for the attribute.
+
+        Raises:
+            ValueError: If the object doesn't exist or the property is not a valid attribute.
         """
-        Add or update a property for an object in the collection.
-        """
-        obj = self.get_object(object_class, object_name)
-        if not obj:
-            raise ValueError(f"Object with name '{object_name}' does not exist in collection '{object_class.__name__}'.")
+        obj = self.get_object_instance(object_class, object_name)
+
+        if obj is None:
+            raise ValueError(f"Object '{object_name}' of class '{object_class.__class__.__name__}' not found.")
+
+        if not hasattr(obj, property_name):
+            raise ValueError(f"'{property_name}' is not a valid attribute of {object_class.__class__.__name__}.")
+
         setattr(obj, property_name, property_value)
 
-    def add_membership(self, child_class, child_name, parent_class, parent_name):
-        """
-        Establish a parent-child relationship between two objects.
-        """
-        child = self.get_object(child_class, child_name)
-        parent = self.get_object(parent_class, parent_name)
+    def save_data(self):
+        """Save objects to a file."""
+        with open(self.filename, "wb") as f:
+            pickle.dump(self.objects_database, f)
 
-        if not child:
-            raise ValueError(f"Child object '{child_name}' does not exist in collection '{child_class.__name__}'.")
-        if not parent:
-            raise ValueError(f"Parent object '{parent_name}' does not exist in collection '{parent_class.__name__}'.")
-
-        if child in parent.children:
-            raise ValueError(f"Child '{child_name}' is already a member of parent '{parent_name}'.")
-        parent.add_child(child)
-
-    def list_objects(self, object_class):
-        """
-        List all objects in the collection for the specified class.
-        """
-        collection = self._get_or_create_collection(object_class)
-        return list(collection.keys())
-
-    def find_objects_by_property(self, object_class, property_name, property_value):
-        """
-        Find objects with a specific property value.
-        """
-        collection = self._get_or_create_collection(object_class)
-        return [
-            obj_name for obj_name, obj in collection.items()
-            if hasattr(obj, property_name) and getattr(obj, property_name) == property_value
-        ]
-
-    def save_to_file(self, filename: str):
-        """
-        Save the current state of data collections to a file.
-        """
-        with open(filename, 'wb') as file:
-            pickle.dump(self.data_collections, file)
-
-    def load_from_file(self, filename: str):
-        """
-        Load data collections from a file.
-        """
-        with open(filename, 'rb') as file:
-            self.data_collections = pickle.load(file)
+    def load_data(self):
+        """Load objects from a file."""
+        try:
+            with open(self.filename, "rb") as f:
+                self.objects_database = pickle.load(f)
+        except FileNotFoundError:
+            print("No saved data found. Starting fresh.")
+            self.objects_database = {}

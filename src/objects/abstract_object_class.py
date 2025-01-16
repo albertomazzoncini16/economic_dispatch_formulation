@@ -1,71 +1,11 @@
 from abc import ABC
-from src.managers.relationship_manager import RelationshipManager
+
 class AbstractObject(ABC):
 
-    def __init__(self, object_name):
+    def __init__(self, object_name: str):
         self.object_name = object_name
         self.parent = None
-        self.children = []
-
-    def add_child(self, child):
-        """
-        Add a child object to this object if allowed by RelationshipManager.
-        """
-        if not RelationshipManager.is_valid_child(self, child):
-            raise ValueError(f"{child.__class__.__name__} is not a valid child of {self.__class__.__name__}.")
-
-        if child in self.get_ancestor_chain():
-            raise ValueError(f"Circular reference detected: {child.object_name} is already an ancestor of {self.object_name}.")
-
-        if child not in self.children:
-            self.children.append(child)
-            child.parent = self
-
-    def validate_parent(self):
-        """
-        Validate that this object has a valid parent based on RelationshipManager.
-        """
-        if not RelationshipManager.is_valid_parent(self, self.parent):
-            required_parents = RelationshipManager.rules.get(type(self), {}).get("parent", ())
-            required_names = ", ".join([cls.__name__ for cls in required_parents])
-            raise ValueError(f"{self.__class__.__name__} '{self.object_name}' must have a parent of type '{required_names}'.")
-
-    def get_ancestor_chain(self):
-        """
-        Retrieve all ancestors of the current object.
-        Returns:
-            set: A set containing all ancestor objects.
-        """
-        ancestors = set()
-        current = self
-        while current.parent:
-            ancestors.add(current.parent)
-            current = current.parent
-        return ancestors
-
-    def get_all_descendants(self):
-        """
-        Retrieve all descendants of the current object.
-        Returns:
-            list: A list containing all descendant objects.
-        """
-        descendants = []
-        stack = self.children[:]
-        while stack:
-            child = stack.pop()
-            descendants.append(child)
-            stack.extend(child.children)
-        return descendants
-
-    def remove_child(self, child):
-        """
-        Remove a child object from this object.
-        Args:
-            child (AbstractObject): The child object to remove.
-        """
-        if child in self.children:
-            self.children.remove(child)
-            child.parent = None
+        self.children = {}
 
     @property
     def object_name(self) -> str:
@@ -78,3 +18,28 @@ class AbstractObject(ABC):
         if not object_name or not isinstance(object_name, str):
             raise ValueError("Object name must be a non-empty string.")
         self._object_name = object_name
+
+    def add_child(self, child: "AbstractObject"):
+        """Add a child object and store it as {class_name: [object_names]}."""
+        child_class_name = child.__class__.__name__
+
+        if child_class_name not in self.children:
+            self.children[child_class_name] = []
+
+        self.children[child_class_name].append(child.object_name)
+
+    def add_parent(self, parent: str):
+        """Assign a parent to this object."""
+        self.parent = parent
+
+    def get_parent(self) -> str:
+        """Retrieve this object's parent."""
+        return self.parent
+
+    def get_all_children(self) -> list[str]:
+        """Retrieve a flat list of all children across all class types."""
+        all_children = []
+        for child_list in self.children.values():
+            all_children.extend(child_list)  # Flatten all child names
+        return all_children
+
