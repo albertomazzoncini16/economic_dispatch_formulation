@@ -1,2 +1,1 @@
 from src.managers.data_manager import DataManager
-from src.managers.relationship_validator import RelationshipValidator

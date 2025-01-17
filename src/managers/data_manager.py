@@ -1,6 +1,6 @@
 import pickle
 from src.objects.abstract_object_class import AbstractObject
-from relationship_validator import RelationshipValidator
+from src.managers.relationship_validator import RelationshipValidator
 from typing import Optional, TYPE_CHECKING
 
 
@@ -19,20 +19,20 @@ class DataManager:
         if not issubclass(object_class, AbstractObject):
             raise ValueError(f"{object_class.__name__} must be a subclass of AbstractObject.")
 
-        object_class_name = object_class.__class__.__name__  # Extract class name dynamically
+        object_class_name = object_class.__name__  # Extract class name dynamically
         return self.objects_database.get(object_class_name, {}).get(object_name, None)
 
     def get_class_object_names(self, object_class: type[AbstractObject]):
         """Return a list of all object names stored under a given class."""
         if not issubclass(object_class, AbstractObject):
-            raise ValueError(f"{object_class.__class__.__name__} must be a subclass of AbstractObject.")
+            raise ValueError(f"{object_class.__name__} must be a subclass of AbstractObject.")
 
-        object_class_name = object_class.__class__.__name__  # Get class name properly
+        object_class_name = object_class.__name__  # Get class name properly
         return list(self.objects_database.get(object_class_name, {}).keys())  # Returns a list of object names (str)
 
-    def add_object(self, object_class: AbstractObject, object_name: str):
+    def add_object(self, object_class: type[AbstractObject], object_name: str):
         """Add a new object to the database under its class name."""
-        object_class_name = object_class.__class__.__name__
+        object_class_name = object_class.__name__
 
         # Ensure the class category exists
         if object_class_name not in self.objects_database:
@@ -71,7 +71,8 @@ class DataManager:
         child_object_class_instance.add_parent(parent_object_class=parent_object_class_instance,
                                                parent_object_name=parent_object_name)
 
-    def add_property(self, object_class: type[AbstractObject], object_name: str, property_name: str, property_value):
+    def add_property(self, object_class: type[AbstractObject], object_name: str, property_name: str,
+                     property_value: object):
         """Retrieve an object instance and add a property if it exists as an attribute in the AbstractObject subclass.
 
         Args:
@@ -86,10 +87,10 @@ class DataManager:
         obj = self.get_object_instance(object_class, object_name)
 
         if obj is None:
-            raise ValueError(f"Object '{object_name}' of class '{object_class.__class__.__name__}' not found.")
+            raise ValueError(f"Object '{object_name}' of class '{object_class.__name__}' not found.")
 
         if not hasattr(obj, property_name):
-            raise ValueError(f"'{property_name}' is not a valid attribute of {object_class.__class__.__name__}.")
+            raise ValueError(f"'{property_name}' is not a valid attribute of {object_class.__name__}.")
 
         setattr(obj, property_name, property_value)
 
