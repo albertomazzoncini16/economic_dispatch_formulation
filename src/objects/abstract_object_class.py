@@ -1,6 +1,5 @@
-from abc import ABC
 
-class AbstractObject(ABC):
+class AbstractObject:
 
     def __init__(self, object_name: str):
         self.object_name = object_name
