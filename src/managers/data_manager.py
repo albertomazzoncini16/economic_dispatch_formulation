@@ -1,7 +1,7 @@
 import pickle
 from src.objects.abstract_object_class import AbstractObject
 from relationship_validator import RelationshipValidator
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 
 class DataManager:
@@ -19,7 +19,7 @@ class DataManager:
         if not issubclass(object_class, AbstractObject):
             raise ValueError(f"{object_class.__name__} must be a subclass of AbstractObject.")
 
-        object_class_name = object_class.__name__  # Extract class name dynamically
+        object_class_name = object_class.__class__.__name__  # Extract class name dynamically
         return self.objects_database.get(object_class_name, {}).get(object_name, None)
 
     def get_class_object_names(self, object_class: type[AbstractObject]):
@@ -27,7 +27,7 @@ class DataManager:
         if not issubclass(object_class, AbstractObject):
             raise ValueError(f"{object_class.__class__.__name__} must be a subclass of AbstractObject.")
 
-        object_class_name = object_class.__name__  # Get class name properly
+        object_class_name = object_class.__class__.__name__  # Get class name properly
         return list(self.objects_database.get(object_class_name, {}).keys())  # Returns a list of object names (str)
 
     def add_object(self, object_class: AbstractObject, object_name: str):
@@ -52,10 +52,10 @@ class DataManager:
                        parent_object_name: str
                        ):
         """Validate and set a parent-child relationship."""
-        child = self.get_object_instance(child_object_class, child_object_name)
-        parent = self.get_object_instance(parent_object_class, parent_object_name)
+        child_object_class_instance = self.get_object_instance(child_object_class, child_object_name)
+        parent_object_class_instance = self.get_object_instance(parent_object_class, parent_object_name)
 
-        if not child or not parent:
+        if not child_object_class_instance or not parent_object_class_instance:
             raise ValueError("Both parent and child must exist before setting a relationship.")
 
         # Validate relationship before setting
@@ -66,7 +66,10 @@ class DataManager:
             raise ValueError(f"{parent_object_class} cannot be a parent of {child_object_class}.")
 
         # Set relationships using object methods
-        parent.add_child(child.object_name)
+        parent_object_class_instance.add_child(child_object_class=child_object_class_instance,
+                                               child_object_name=child_object_name)
+        child_object_class_instance.add_parent(parent_object_class=parent_object_class_instance,
+                                               parent_object_name=parent_object_name)
 
     def add_property(self, object_class: type[AbstractObject], object_name: str, property_name: str, property_value):
         """Retrieve an object instance and add a property if it exists as an attribute in the AbstractObject subclass.

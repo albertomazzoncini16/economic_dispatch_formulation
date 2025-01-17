@@ -4,7 +4,7 @@ class AbstractObject(ABC):
 
     def __init__(self, object_name: str):
         self.object_name = object_name
-        self.parent = None
+        self.parent = {}
         self.children = {}
 
     @property
@@ -19,22 +19,30 @@ class AbstractObject(ABC):
             raise ValueError("Object name must be a non-empty string.")
         self._object_name = object_name
 
-    def add_child(self, child: "AbstractObject"):
+    def add_child(self, child_object_class: "AbstractObject", child_object_name: str):
         """Add a child object and store it as {class_name: [object_names]}."""
-        child_class_name = child.__class__.__name__
+        child_class_name = child_object_class.__class__.__name__
 
         if child_class_name not in self.children:
             self.children[child_class_name] = []
 
-        self.children[child_class_name].append(child.object_name)
+        self.children[child_class_name].append(child_object_name)
 
-    def add_parent(self, parent: str):
+    def add_parent(self, parent_object_class: "AbstractObject", parent_object_name: str):
         """Assign a parent to this object."""
-        self.parent = parent
+        parent_class_name = parent_object_class.__class__.__name__
 
-    def get_parent(self) -> str:
+        if parent_class_name not in self.parent and not self.parent:
+            self.parent[parent_class_name] = []
+
+        self.parent[parent_class_name].append(parent_object_name)
+
+    def get_parent(self) -> list:
         """Retrieve this object's parent."""
-        return self.parent
+        all_parent = []
+        for parent_list in self.parent.values():
+            all_parent.extend(parent_list)  # Flatten all parent names
+        return all_parent
 
     def get_all_children(self) -> list[str]:
         """Retrieve a flat list of all children across all class types."""
