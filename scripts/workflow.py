@@ -1,5 +1,5 @@
 from src import DataManager, ObjectClass
-
+from src.managers.relationship_validator import RelationshipValidator
 # Initialize DataManager
 manager = DataManager()
 
@@ -14,3 +14,8 @@ manager.add_membership(child_object_class=ObjectClass.Generator,
                        child_object_name='gen_1',
                        parent_object_class=ObjectClass.Node,
                        parent_object_name='node_1')
+
+r = RelationshipValidator
+r.get_object_classes_with_required_parents()
+r.has_required_parent(object_class=ObjectClass.Node, parent_class=ObjectClass.Generator)
+
