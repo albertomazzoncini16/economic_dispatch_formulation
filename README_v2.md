@@ -85,8 +85,8 @@ manager.add_object("Generator", "Gen1", capacity=100)
 
 ```python
 # Add properties to nodes
-manager.add_property("Node", "Node1", "voltage", 110)
-manager.add_property("Node", "Node2", "voltage", 220)
+manager.add_attribute("Node", "Node1", "voltage", 110)
+manager.add_attribute("Node", "Node2", "voltage", 220)
 ```
 
 #### Creating Memberships

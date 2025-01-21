@@ -82,9 +82,10 @@ manager.add_object(Generator(object_name="gen_32"))
 ```
 
 #### Adding Properties
+
 ```python
 # Add properties to nodes
-manager.add_property(Generator, "gen_32", "nominal_power", 100.0)
+manager.add_attribute(Generator, "gen_32", "nominal_power", 100.0)
 ```
 
 #### Creating Memberships
