@@ -1,5 +1,5 @@
 from src.objects.abstract_object_class import AbstractObject
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 @dataclass
 class Node(AbstractObject):

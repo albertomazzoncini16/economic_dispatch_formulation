@@ -19,7 +19,7 @@ class DataManager:
     @staticmethod
     def get_object_class_name(object_class: type[AbstractObject]) -> str:
         """Retrieve the class name of an object."""
-        return object_class.__class__.__name__
+        return object_class.__name__
 
     def get_object_instance(self,
                             object_class: type[AbstractObject],
@@ -31,14 +31,6 @@ class DataManager:
 
         object_class_name = self.get_object_class_name(object_class)
         return self.objects_database.get(object_class_name, {}).get(object_name, None)
-
-    # def get_class_object_names(self, object_class: type[AbstractObject]) -> list:
-    #     """Return a list of all object names stored under a given class."""
-    #     if not issubclass(object_class, AbstractObject):
-    #         raise ValueError(f"{self.get_object_class_name(object_class)} must be a subclass of AbstractObject.")
-    #
-    #     object_class_name = self.get_object_class_name(object_class)
-    #     return list(self.objects_database.get(object_class_name, {}).keys())  # Returns a list of object names (str)
 
     def add_object(self, object_class: Type[AbstractObject], object_name: str):
         """Initialize and add a new object instance to the database under its class name."""
@@ -74,10 +66,10 @@ class DataManager:
 
         # Validate relationship before setting
         if not RelationshipValidator.is_valid_child(parent_object_instance.__class__, child_object_instance.__class__):
-            raise ValueError(f"{child_object_instance.__class__.__name__} cannot be a child of {parent_object_instance.__class__.__name__}.")
+            raise ValueError(f"{child_object_instance.__name__} cannot be a child of {parent_object_instance.__name__}.")
 
         if not RelationshipValidator.is_valid_parent(child_object_instance.__class__, parent_object_instance.__class__):
-            raise ValueError(f"{parent_object_instance.__class__.__name__} cannot be a parent of {child_object_instance.__class__.__name__}.")
+            raise ValueError(f"{parent_object_instance.__name__} cannot be a parent of {child_object_instance.__name__}.")
 
         # Use ObjectManager to update attributes
         ObjectAttributesManager.add_child(obj=parent_object_instance, child_class=child_object_class, child_object_name=child_object_name)
@@ -98,13 +90,6 @@ class DataManager:
         if obj is None:
             raise ValueError(f"Object '{object_name}' of class '{object_class.__name__}' not found in DataManager.")
         return ObjectAttributesManager.get_attribute(obj, property_name)
-
-    # def get_child_names(self, object_class: type[AbstractObject], object_name: str) -> list:
-    #     """Retrieve child names of an object using ObjectManager."""
-    #     obj = self.get_object_instance(object_class, object_name)
-    #     if obj is None:
-    #         raise ValueError(f"Object '{object_name}' of class '{object_class.__name__}' not found in DataManager.")
-    #     return ObjectAttributesManager.get_child_names(obj)
 
     def save_data(self):
         """Save objects to a file."""
