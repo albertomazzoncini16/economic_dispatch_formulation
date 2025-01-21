@@ -1,4 +1,4 @@
-from src.objects import Fuel, Node, Generator, Load
+from src.objects import ObjectClass
 
 class RelationshipValidator:
     """
@@ -7,10 +7,10 @@ class RelationshipValidator:
     """
 
     rules = {
-        Node: {"children": (Generator, Load), "parent": ()},
-        Generator: {"children": (Fuel,), "parent": (Node,)},
-        Load: {"children": (), "parent": (Node,)},
-        Fuel: {"children": (), "parent": (Generator,)}
+        ObjectClass.Node: {"children": (ObjectClass.Generator, ObjectClass.Load), "parent": ()},
+        ObjectClass.Generator: {"children": (ObjectClass.Fuel,), "parent": (ObjectClass.Node,)},
+        ObjectClass.Load: {"children": (), "parent": (ObjectClass.Node,)},
+        ObjectClass.Fuel: {"children": (), "parent": (ObjectClass.Generator,)}
     }
 
     @classmethod

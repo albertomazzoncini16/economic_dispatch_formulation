@@ -61,15 +61,18 @@ class DataManager:
         child_object_instance = self.get_object_instance(child_object_class, child_object_name)
         parent_object_instance = self.get_object_instance(parent_object_class, parent_object_name)
 
-        if not child_object_instance or not parent_object_instance:
-            raise ValueError("Both parent and child must exist before setting a relationship.")
+        if not parent_object_instance:
+            raise ValueError(f"Parent {parent_object_name} must exist before setting a relationship.")
+
+        if not child_object_instance:
+            raise ValueError(f"Child {child_object_name} must exist before setting a relationship.")
 
         # Validate relationship before setting
         if not RelationshipValidator.is_valid_child(parent_object_instance.__class__, child_object_instance.__class__):
-            raise ValueError(f"{child_object_instance.__name__} cannot be a child of {parent_object_instance.__name__}.")
+            raise ValueError(f"ObjectClass {child_object_instance.__class__.__name__} cannot be a child of ObjectClass {parent_object_instance.__class__.__name__}.")
 
         if not RelationshipValidator.is_valid_parent(child_object_instance.__class__, parent_object_instance.__class__):
-            raise ValueError(f"{parent_object_instance.__name__} cannot be a parent of {child_object_instance.__name__}.")
+            raise ValueError(f"ObjectClass {parent_object_instance.__class__.__name__} cannot be a parent of ObjectClass {child_object_instance.__class__.__name__}.")
 
         # Use ObjectManager to update attributes
         ObjectAttributesManager.add_child(obj=parent_object_instance, child_class=child_object_class, child_object_name=child_object_name)
