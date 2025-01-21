@@ -75,8 +75,8 @@ class DataManager:
             raise ValueError(f"ObjectClass {parent_object_instance.__class__.__name__} cannot be a parent of ObjectClass {child_object_instance.__class__.__name__}.")
 
         # Use ObjectManager to update attributes
-        ObjectAttributesManager.add_child(obj=parent_object_instance, child_class=child_object_class, child_object_name=child_object_name)
-        ObjectAttributesManager.add_parent(obj=child_object_instance, parent_class=parent_object_class, parent_object_name=parent_object_name)
+        ObjectAttributesManager.set_child(obj=parent_object_instance, child_class=child_object_class, child_object_name=child_object_name)
+        ObjectAttributesManager.set_parent(obj=child_object_instance, parent_class=parent_object_class, parent_object_name=parent_object_name)
 
     def add_attribute(self, object_class: type[AbstractObject], object_name: str, attr_name: str, attr_value):
         """Retrieve an object instance and add a property using ObjectManager."""

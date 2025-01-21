@@ -20,7 +20,7 @@ class ObjectAttributesManager:
         raise AttributeError(f"'{obj.__name__}' object has no attribute '{attr_name}'")
 
     @staticmethod
-    def add_child(obj: AbstractObject, child_class: Type[AbstractObject], child_object_name: str):
+    def set_child(obj: AbstractObject, child_class: Type[AbstractObject], child_object_name: str):
         """Add a child object and store it as {class_name: [object_names]}."""
         child_class_name = child_class.__name__
 
@@ -30,7 +30,7 @@ class ObjectAttributesManager:
         obj.children[child_class_name].append(child_object_name)
 
     @staticmethod
-    def add_parent(obj: AbstractObject, parent_class: Type[AbstractObject], parent_object_name: str):
+    def set_parent(obj: AbstractObject, parent_class: Type[AbstractObject], parent_object_name: str):
         """Add a parent object and store it as {class_name: [object_names]}."""
         parent_class_name = parent_class.__name__
 
