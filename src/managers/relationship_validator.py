@@ -7,10 +7,22 @@ class RelationshipValidator:
     """
 
     rules = {
-        ObjectClass.Node: {"children": (ObjectClass.Generator, ObjectClass.Load), "parent": ()},
-        ObjectClass.Generator: {"children": (ObjectClass.Fuel,), "parent": (ObjectClass.Node,)},
-        ObjectClass.Load: {"children": (), "parent": (ObjectClass.Node,)},
-        ObjectClass.Fuel: {"children": (), "parent": (ObjectClass.Generator,)}
+        ObjectClass.Node:
+            {"children": (ObjectClass.Generator, ObjectClass.Load),
+             "parent": (),
+             "required_parent": ()},
+        ObjectClass.Generator:
+            {"children": (ObjectClass.Fuel,),
+             "parent": (ObjectClass.Node,),
+             "required_parent": (ObjectClass.Node,)},
+        ObjectClass.Load:
+            {"children": (),
+             "parent": (ObjectClass.Node,),
+             "required_parent": (ObjectClass.Node,)},
+        ObjectClass.Fuel:
+            {"children": (),
+             "parent": (ObjectClass.Generator,),
+             "required_parent": ()},
     }
 
     @classmethod
