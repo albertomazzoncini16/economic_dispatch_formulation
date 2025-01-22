@@ -1,5 +1,5 @@
 class ObjectClass:
-    """Auto-generated storage for object classes."""
+    """Auto-generated class for specific object access."""
 
     from src.objects.specific_object_classes import Fuel
     Fuel = Fuel
