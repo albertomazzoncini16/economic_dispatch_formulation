@@ -5,6 +5,16 @@ from src.utils.abstract_object_subclasses import get_object_class_name, assert_a
 from typing import Optional, Type, Dict, List
 
 
+def require_open(func):
+    """Decorator to enforce that DataManager is open."""
+
+    def wrapper(self, *args, **kwargs):
+        if not self._is_open:
+            raise RuntimeError("DataManager must be open to perform this operation.")
+        return func(self, *args, **kwargs)
+
+    return wrapper
+
 class DataManager:
     """
     Manages objects in a structured dictionary format.
@@ -14,6 +24,36 @@ class DataManager:
     """
     def __init__(self):
         self.objects_database: Dict[str, Dict[str, AbstractObject]] = {}  # Structure: {"ClassName": {"ObjectName": ObjectInstance}}
+        self._is_open = False
+
+    def __enter__(self):
+        """Enter context."""
+        self._is_open = True
+        return self
+
+    def validate_relationships(self):
+        pass
+
+    def data_validation(self):
+        """Perform all necessary validations before closing."""
+        try:
+            self.validate_relationships()
+        except Exception as e:
+            print(f"Validation failed: {e}")
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Perform checks before exiting context."""
+        validation_error = None
+        try:
+            self.data_validation()
+        except Exception as e:
+            print(f"Validation failed: {e}")
+            validation_error = e
+        self._is_open = False
+        if exc_type is not None:
+            print(f"Exception occurred: {exc_value}")
+        return validation_error is not None
+
 
     def get_object_instance(self,
                             object_class: Type[AbstractObject],
@@ -35,6 +75,7 @@ class DataManager:
     def get_added_object_classes(self) -> List[str]:
         return list(self.objects_database.keys())
 
+    @require_open
     def add_object(self,
                    object_class: Type[AbstractObject],
                    object_name: str
@@ -55,6 +96,7 @@ class DataManager:
         obj: AbstractObject = object_class(object_name=object_name)
         self.objects_database[object_class_name][object_name] = obj
 
+    @require_open
     def add_membership(self,
                        child_object_class: Type[AbstractObject],
                        child_object_name: str,
@@ -82,6 +124,7 @@ class DataManager:
         ObjectAttributesManager.set_child(obj=parent_object_instance, child_class=child_object_class, child_object_name=child_object_name)
         ObjectAttributesManager.set_parent(obj=child_object_instance, parent_class=parent_object_class, parent_object_name=parent_object_name)
 
+    @require_open
     def add_attribute(self,
                       object_class: Type[AbstractObject],
                       object_name: str,
@@ -91,13 +134,9 @@ class DataManager:
 
         """Retrieve an object instance and add a property using ObjectManager."""
         object_class_instance = self.get_object_instance(object_class, object_name)
-
         if object_class_instance is None:
             raise ValueError(f"Object '{object_name}' of class '{object_class.__name__}' not found in DataManager.")
-
         ObjectAttributesManager.set_attribute(obj=object_class_instance, attr_name=attr_name, attr_value=attr_value)
-
-        return True
 
     def get_object_attribute(self,
                              object_class: Type[AbstractObject],
