@@ -17,9 +17,22 @@ class DataManager:
         self.objects_database: Dict[str, Dict[str, AbstractObject]] = {}  # Structure: {"ClassName": {"ObjectName": ObjectInstance}}
 
     @staticmethod
-    def get_object_class_name(object_class: type[AbstractObject]) -> str:
-        """Retrieve the class name of an object."""
-        return object_class.__name__
+    def get_object_class_name(object_class: Optional[Type[AbstractObject] | str]) -> str:
+        """
+        Retrieve the class name of an object.
+
+        - If `object_class` is a subclass of `AbstractObject`, return its `__name__`.
+        - If `object_class` is a string, check if it matches any known subclass name of `AbstractObject`.
+        """
+        if isinstance(object_class, type) and issubclass(object_class, AbstractObject):
+            return object_class.__name__
+        elif isinstance(object_class, str):
+            subclass_names = {subclass.__name__ for subclass in AbstractObject.__subclasses__()}
+            if object_class in subclass_names:
+                return object_class
+            raise ValueError(f"'{object_class}' is not a valid AbstractObject subclass name.")
+        else:
+            raise TypeError("Input must be a subclass of AbstractObject or a valid subclass name as a string.")
 
     def get_object_instance(self,
                             object_class: type[AbstractObject],
@@ -48,6 +61,7 @@ class DataManager:
             raise ValueError(f"Object '{object_name}' already exists in '{object_class_name}'.")
 
         # Initialize and store the object
+        object_class : AbstractObject
         obj: AbstractObject = object_class(object_name=object_name)
         self.objects_database[object_class_name][object_name] = obj
 
