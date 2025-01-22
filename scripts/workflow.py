@@ -20,9 +20,11 @@ manager.add_membership(child_object_class=ObjectClass.Generator,
 
 rv = RelationshipValidator
 for object_class_name in rv.get_object_classes_with_required_parents():
-    for object_class_instance in manager.get_object_class_instances(object_class=object_class_name):
-        object_class_instance: AbstractObject
-        parent = ObjectAttributesManager.get_parent_object_class_name(object_class_instance)
-        rv.has_required_parent(object_class=object_class_name, parent_class=parent[0])
+    if object_class_name in manager.get_added_object_classes():
+        for object_class_instance in manager.get_object_class_instances(object_class=object_class_name):
+            object_class_instance: AbstractObject
+            parent = ObjectAttributesManager.get_parent_object_class_name(object_class_instance)
+            if not rv.has_required_parent(object_class=object_class_name, parent_class=parent[0]):
+                print('problem')
 
 
