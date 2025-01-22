@@ -29,7 +29,11 @@ class DataManager:
                                    ) -> List[AbstractObject]:
         assert_abstract_object_subclass(object_class)
         object_class_name = get_object_class_name(object_class)
+
         return list(self.objects_database.get(object_class_name).values())
+
+    def get_added_object_classes(self) -> List[str]:
+        return list(self.objects_database.keys())
 
     def add_object(self,
                    object_class: Type[AbstractObject],
