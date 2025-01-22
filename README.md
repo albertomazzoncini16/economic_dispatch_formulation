@@ -25,7 +25,7 @@ src/
 │   ├── registry_object_subclasses.py    # Registry of object classes
 │   ├── object_classes.py                # ObjectClass class for easy access to AbstractObject subclasses
 │   ├── specific_object_classes.py       # Object specificclasses
-├── objects/
+├── utils/
 │   ├── abstract_object_subclasses.py    # AbstractObjects utils for str and class comparison
 │   ├── object_classes_loader.py         # Load and build objects/object_class.py to store the AbstractObject subclasses
 
