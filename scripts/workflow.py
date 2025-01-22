@@ -1,4 +1,6 @@
 from src import DataManager, ObjectClass
+from src.managers.objects_attributes_manager import ObjectAttributesManager
+from src.managers.relationship_validator import RelationshipValidator, AbstractObject
 
 # Initialize DataManager
 manager = DataManager()
@@ -14,3 +16,15 @@ manager.add_membership(child_object_class=ObjectClass.Generator,
                        child_object_name='gen_1',
                        parent_object_class=ObjectClass.Node,
                        parent_object_name='node_1')
+
+
+rv = RelationshipValidator
+for object_class_name in rv.get_object_classes_with_required_parents():
+    if object_class_name in manager.get_added_object_classes():
+        for object_class_instance in manager.get_object_class_instances(object_class=object_class_name):
+            object_class_instance: AbstractObject
+            parent = ObjectAttributesManager.get_parent_object_class_name(object_class_instance)
+            if not rv.has_required_parent(object_class=object_class_name, parent_class=parent[0]):
+                print('problem')
+
+

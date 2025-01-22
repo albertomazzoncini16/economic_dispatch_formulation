@@ -1,5 +1,5 @@
 from src.objects.abstract_object_class import AbstractObject
-from typing import Type
+from typing import Type, List
 
 class ObjectAttributesManager:
     """Manages setting and retrieving attributes of an object."""
@@ -31,10 +31,14 @@ class ObjectAttributesManager:
 
     @staticmethod
     def set_parent(obj: AbstractObject, parent_class: Type[AbstractObject], parent_object_name: str):
-        """Add a parent object and store it as {class_name: [object_names]}."""
+        """Set a single parent object, ensuring only one parent is stored."""
+        if obj.parent:
+            raise ValueError(f"'{obj.__class__.__name__}' already has a parent and cannot be reassigned.")
+
         parent_class_name = parent_class.__name__
+        obj.parent = {parent_class_name: parent_object_name}  # Ensures only one parent is stored
 
-        if parent_class_name not in obj.parent:
-            obj.parent[parent_class_name] = []
-
-        obj.parent[parent_class_name].append(parent_object_name)
+    @staticmethod
+    def get_parent_object_class_name(obj: AbstractObject) -> List[str]:
+        """Retrieve the parent class name from an instance of AbstractObject."""
+        return list(obj.parent.keys())
