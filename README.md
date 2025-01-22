@@ -23,7 +23,12 @@ src/
 ├── objects/
 │   ├── abstract_object_class.py         # Abstract base class for all objects
 │   ├── registry_object_subclasses.py    # Registry of object classes
-│   ├── specific_object_classes.py       # Object classes
+│   ├── object_classes.py                # ObjectClass class for easy access to AbstractObject subclasses
+│   ├── specific_object_classes.py       # Object specificclasses
+├── objects/
+│   ├── abstract_object_subclasses.py    # AbstractObjects utils for str and class comparison
+│   ├── object_classes_loader.py         # Load and build objects/object_class.py to store the AbstractObject subclasses
+
 ```
 
 ---
@@ -52,3 +57,31 @@ The `DataManager` acts as the centralized authority. It:
 #### **4. Relationship Validator**
 The class `RelationshipValidator` enforces rules for object interactions:
 - Ensures valid parent-child relationships.
+
+#### **5. Utility Object Class Generator**
+
+- Dynamically loads classes from `specific_object_classes.py`.
+- Generates `object_class.py` to centralize access to these classes.
+- `load_classes(module_path, module_name)` loads and returns all classes in a module.
+- `generate_object_class()`: 
+  - Finds `specific_object_classes.py`.
+  - Loads its classes.
+  - Generates `object_class.py` with structured class imports.
+- Runs Automatically (`__main__` block).
+
+```python
+class ObjectClass:
+    """Auto-generated class for specific object access."""
+
+    from src.objects.specific_object_classes import Node
+    Node = Node
+
+#Utilisation
+ObjectClass.Node
+```
+
+#### **6. Utility Abstract Object**
+- Provides helper functions to retrieve and validate subclasses of `AbstractObject`.
+- Ensures correct handling of class names as both string representations and actual class references.
+
+
