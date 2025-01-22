@@ -1,5 +1,5 @@
 from src.objects import ObjectClass, AbstractObject
-from src.utils.objects_utils.abstract_object_subclasses import (
+from src.utils.abstract_object_subclasses import (
     get_object_class_name,
     get_abstract_object_subclass,
 )
