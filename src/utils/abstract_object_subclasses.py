@@ -45,7 +45,7 @@ def get_abstract_object_subclass (object_class_name: str) -> Type[AbstractObject
 
     return subclass_lookup[object_class_name]
 
-def assert_abstract_object_subclass(object_class: Type[AbstractObject]) -> None:
+def assert_abstract_object_subclass(object_class: Type[AbstractObject] | str) -> None:
     """
     Ensures that the given class is a subclass of AbstractObject.
 
@@ -55,6 +55,8 @@ def assert_abstract_object_subclass(object_class: Type[AbstractObject]) -> None:
     Raises:
         TypeError: If the provided class is not a subclass of AbstractObject.
     """
+    if isinstance(object_class, str):
+        object_class = get_abstract_object_subclass(object_class_name=object_class)
     if not issubclass(object_class, AbstractObject):
         raise ValueError(f"'{object_class.__name__}' must be a subclass of AbstractObject, "
                          f"but got {type(object_class).__name__} instead.")
