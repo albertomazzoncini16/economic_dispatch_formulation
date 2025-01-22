@@ -5,6 +5,16 @@ from src.utils.abstract_object_subclasses import get_object_class_name, assert_a
 from typing import Optional, Type, Dict, List
 
 
+def require_open(func):
+    """Decorator to enforce that DataManager is open."""
+
+    def wrapper(self, *args, **kwargs):
+        if not self._is_open:
+            raise RuntimeError("DataManager must be open to perform this operation.")
+        return func(self, *args, **kwargs)
+
+    return wrapper
+
 class DataManager:
     """
     Manages objects in a structured dictionary format.
@@ -14,6 +24,65 @@ class DataManager:
     """
     def __init__(self):
         self.objects_database: Dict[str, Dict[str, AbstractObject]] = {}  # Structure: {"ClassName": {"ObjectName": ObjectInstance}}
+        self._is_open = False
+
+    def __enter__(self):
+        """Enter context."""
+        self._is_open = True
+        return self
+
+    def validate_object_required_parent(self) -> None:
+        """Validate that objects with required parents have valid parents."""
+        errors = []
+
+        for object_class_name_with_required_parents in RelationshipValidator.get_object_classes_with_required_parent():
+            if object_class_name_with_required_parents in self.get_added_object_classes():
+                for object_class_instance in self.get_object_class_instances(object_class_name_with_required_parents):
+                    object_class_instance_required_parents = RelationshipValidator.get_object_class_required_parent(object_class_name_with_required_parents)
+                    object_parent_class_name = ObjectAttributesManager.get_parent_object_class_name(object_class_instance)
+                    # No parent required and no parent assigned → Valid, continue
+                    if object_class_instance_required_parents is None and (object_parent_class_name is None or not object_parent_class_name):
+                        continue
+                    object_class_instance_required_parents_name = [get_object_class_name(object_class_instance_required_parent)
+                                                                   for object_class_instance_required_parent
+                                                                   in object_class_instance_required_parents]
+
+                    # Parent required but not assigned → Error
+                    if object_class_instance_required_parents_name is not None and (object_parent_class_name is None or not object_parent_class_name):
+                        errors.append(
+                            f"Object '{object_class_instance.object_name}' of class '{object_class_name_with_required_parents}' requires a parent "
+                            f"from {object_class_instance_required_parents_name}, but none is assigned."
+                        )
+                        continue
+
+                    # Parent assigned but no parent should be there → Error
+                    if object_class_instance_required_parents_name is None and object_parent_class_name:
+                        errors.append(
+                            f"Object '{object_class_instance.object_name}' of class '{object_class_name_with_required_parents}' should not have a parent, "
+                            f"but '{object_parent_class_name[0]}' is assigned."
+                        )
+                        continue
+
+                    # Parent assigned but does not match the required parent(s) → Error
+                    if object_class_instance_required_parents_name is not None and object_parent_class_name[0] not in object_class_instance_required_parents_name:
+                        errors.append(
+                            f"Object '{object_class_instance.object_name}' of class '{object_class_name_with_required_parents}' has an invalid parent "
+                            f"'{object_parent_class_name[0]}'. Expected one of {object_class_instance_required_parents_name}."
+                        )
+
+                if errors:
+                    raise ValueError("\n".join(errors))
+
+    def data_validation(self):
+        """Perform all necessary validations before closing."""
+        self.validate_object_required_parent()
+
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Perform checks before exiting context."""
+        self._is_open = False  # Ensure it is closed first
+        self.data_validation()  # Will raise an exception if validation fails
+        print("Data validation was successful.")  # Only prints if no exception occurs
 
     def get_object_instance(self,
                             object_class: Type[AbstractObject],
@@ -35,6 +104,7 @@ class DataManager:
     def get_added_object_classes(self) -> List[str]:
         return list(self.objects_database.keys())
 
+    @require_open
     def add_object(self,
                    object_class: Type[AbstractObject],
                    object_name: str
@@ -55,6 +125,7 @@ class DataManager:
         obj: AbstractObject = object_class(object_name=object_name)
         self.objects_database[object_class_name][object_name] = obj
 
+    @require_open
     def add_membership(self,
                        child_object_class: Type[AbstractObject],
                        child_object_name: str,
@@ -82,6 +153,7 @@ class DataManager:
         ObjectAttributesManager.set_child(obj=parent_object_instance, child_class=child_object_class, child_object_name=child_object_name)
         ObjectAttributesManager.set_parent(obj=child_object_instance, parent_class=parent_object_class, parent_object_name=parent_object_name)
 
+    @require_open
     def add_attribute(self,
                       object_class: Type[AbstractObject],
                       object_name: str,
@@ -91,13 +163,9 @@ class DataManager:
 
         """Retrieve an object instance and add a property using ObjectManager."""
         object_class_instance = self.get_object_instance(object_class, object_name)
-
         if object_class_instance is None:
             raise ValueError(f"Object '{object_name}' of class '{object_class.__name__}' not found in DataManager.")
-
         ObjectAttributesManager.set_attribute(obj=object_class_instance, attr_name=attr_name, attr_value=attr_value)
-
-        return True
 
     def get_object_attribute(self,
                              object_class: Type[AbstractObject],

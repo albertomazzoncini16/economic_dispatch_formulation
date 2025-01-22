@@ -4,27 +4,23 @@ from src.managers.relationship_validator import RelationshipValidator, AbstractO
 
 # Initialize DataManager
 manager = DataManager()
+with manager:
+    manager.add_object(object_class=ObjectClass.Node, object_name='node_1')
+    manager.add_object(object_class=ObjectClass.Generator, object_name='gen_1')
+    manager.add_attribute(object_class=ObjectClass.Generator,
+                         object_name='gen_1',
+                         attr_name='nominal_power',
+                         attr_value=400)
+    manager.add_object(object_class=ObjectClass.Generator, object_name='gen_2')
+    manager.add_attribute(object_class=ObjectClass.Generator,
+                         object_name='gen_2',
+                         attr_name='nominal_power',
+                         attr_value=400)
 
-manager.add_object(object_class=ObjectClass.Node, object_name='node_1')
-manager.add_object(object_class=ObjectClass.Generator, object_name='gen_1')
-manager.add_attribute(object_class=ObjectClass.Generator,
-                     object_name='gen_1',
-                     attr_name='nominal_power',
-                     attr_value=400)
+    manager.add_membership(child_object_class=ObjectClass.Generator,
+                           child_object_name='gen_1',
+                           parent_object_class=ObjectClass.Node,
+                           parent_object_name='node_1')
 
-manager.add_membership(child_object_class=ObjectClass.Generator,
-                       child_object_name='gen_1',
-                       parent_object_class=ObjectClass.Node,
-                       parent_object_name='node_1')
-
-
-rv = RelationshipValidator
-for object_class_name in rv.get_object_classes_with_required_parents():
-    if object_class_name in manager.get_added_object_classes():
-        for object_class_instance in manager.get_object_class_instances(object_class=object_class_name):
-            object_class_instance: AbstractObject
-            parent = ObjectAttributesManager.get_parent_object_class_name(object_class_instance)
-            if not rv.has_required_parent(object_class=object_class_name, parent_class=parent[0]):
-                print('problem')
 
 
