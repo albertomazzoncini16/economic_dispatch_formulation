@@ -1,9 +1,8 @@
 from src import DataManager, ObjectClass
-from src.managers.objects_attributes_manager import ObjectAttributesManager
-from src.managers.relationship_validator import RelationshipValidator, AbstractObject
 
 # Initialize DataManager
 manager = DataManager()
+
 with manager:
     manager.add_object(object_class=ObjectClass.Node, object_name='node_1')
     manager.add_object(object_class=ObjectClass.Generator, object_name='gen_1')
