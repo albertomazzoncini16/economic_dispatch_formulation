@@ -21,5 +21,11 @@ with manager:
                            parent_object_class=ObjectClass.Node,
                            parent_object_name='node_1')
 
+    manager.add_membership(child_object_class=ObjectClass.Generator,
+                           child_object_name='gen_2',
+                           parent_object_class=ObjectClass.Node,
+                           parent_object_name='node_1')
 
 
+
+manager.
